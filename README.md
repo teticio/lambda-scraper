@@ -1,7 +1,12 @@
 # lambda-scraper
 
-Uses terraform to deploy as many lambda functions as you like to act as proxies. Each lambda function may have a different IP address, and these will change periodically. You only pay for the data transfer (around $9 per 100 GB).
+Use AWS Lambda functions as a proxy to GET web pages. This is a cost effective way to have access to a large pool of IP addresses. Run the following to create as many Lambda functions as you need (one for each IP address). The number of functions as well as the region can be specified in `variables.tf`. Each Lambda function chnages IP address after approximately 6 minutes of inactvity. For example, you could create 360 Lambda functions which you cycle through one per second, while making as many requests as possible via each corresponding IP address. Note that, in practice, AWS will sometimes assign the same IP address to more than one Lambda function.
 
-Run `terrafom apply` to deploy to your AWS account.
-
-`test_scraper.py` gets the IP address of each lambda function in a round robin fashion. You can adapt it to retrieve any URL. Note that the data is base64 encoded and there is currently a limit imposed by AWS of 6 MB payload per call.
+```
+git clone https://github.com/teticio/lambda-scraper.git
+cd lambda-scraper
+terraform init
+terraform apply -auto-approve
+# run "terraform apply -destroy -auto-approve" in the same directory to tear all this down again
+```
+An example of how to use this from Python is provided in `test_scraper.py`.
