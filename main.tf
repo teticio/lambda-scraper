@@ -15,13 +15,10 @@ provider "aws" {
 }
 
 module "lambda_function" {
-  source               = "github.com/raymondbutcher/terraform-aws-lambda-builder"
-  count                = var.num_proxies
-  function_name        = "proxy-${count.index}"
-  handler              = "lambda_function.lambda_handler"
-  runtime              = "python3.8"
-  timeout              = 30
-  build_mode           = "FILENAME"
-  filename             = "lambda_function.py"
-  source_dir           = "${path.module}/src"
+  source        = "terraform-aws-modules/lambda/aws"
+  count         = var.num_proxies
+  function_name = "proxy-${count.index}"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.8"
+  source_path   = "${path.module}/src/lambda_function.py"
 }
