@@ -4,7 +4,7 @@ import urllib3
 
 
 def lambda_handler(event, context):
-    http = urllib3.PoolManager()
+    http = urllib3.PoolManager(headers=event.get('headers', None))
     r = http.request('GET', event['url'])
     return {
         'isBase64Encoded': True,
