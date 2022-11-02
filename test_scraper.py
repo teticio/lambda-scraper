@@ -1,4 +1,3 @@
-import io
 import json
 import boto3
 import base64
