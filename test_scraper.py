@@ -41,5 +41,5 @@ if __name__ == '__main__':
         proxy.send(None)  # have to do this each time
         response = proxy.send('https://ipinfo.io/ip')
         print(
-            f'{response["statusCode"]} {base64.b64decode(response["body"]).decode("utf-8")}'
+            f'{response["statusCode"]} {base64.b64decode(response["body"]).decode("ISO-8859-1")}'
         )
