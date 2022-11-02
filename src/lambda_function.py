@@ -1,14 +1,15 @@
 import json
-import base64
-import urllib3
+from requests_html import HTMLSession
 
 
 def lambda_handler(event, context):
-    http = urllib3.PoolManager(headers=event.get('headers', None))
-    r = http.request('GET', event['url'])
+    session = HTMLSession()
+    r = session.request(method='GET',
+                        url=event['url'],
+                        headers=event.get('headers', None))
     return {
         'isBase64Encoded': True,
         'headers': json.dumps(dict(r.headers)),
-        'statusCode': r.status,
-        'body': base64.b64encode(r.data).decode('utf-8')
+        'statusCode': r.status_code,
+        'body': r.text
     }

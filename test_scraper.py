@@ -1,6 +1,5 @@
 import json
 import boto3
-import base64
 
 headers = {
     "accept":
@@ -40,6 +39,4 @@ if __name__ == '__main__':
     while True:
         proxy.send(None)  # have to do this each time
         response = proxy.send('https://ipinfo.io/ip')
-        print(
-            f'{response["statusCode"]} {base64.b64decode(response["body"]).decode("ISO-8859-1")}'
-        )
+        print(f'{response["statusCode"]} {response["body"]}')
