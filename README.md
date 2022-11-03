@@ -9,4 +9,11 @@ terraform init
 terraform apply -auto-approve
 # run "terraform apply -destroy -auto-approve" in the same directory to tear all this down again
 ```
+You can specify an `AWS_PROFILE` and `AWS_REGION` with
+```
+terraform apply -auto-approve -var 'region=AWS_REGION' --var 'profile=AWS_PROFILE'
+```
 An example of how to use this from Python is provided in `test_scraper.py`.
+```
+AWS_DEFAULT_REGION=AWS_REGION python test_scraper.py
+```
