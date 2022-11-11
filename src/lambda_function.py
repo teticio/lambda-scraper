@@ -8,7 +8,6 @@ def lambda_handler(event, context):
                         url=event['url'],
                         headers=event.get('headers', None))
     return {
-        'isBase64Encoded': True,
         'headers': json.dumps(dict(r.headers)),
         'statusCode': r.status_code,
         'body': r.text
