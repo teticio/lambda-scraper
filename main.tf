@@ -18,6 +18,8 @@ module "lambda_function" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.8"
   hash_extra    = "${count.index}"
+  timeout       = 30
+
   source_path = [
     "${path.module}/src/lambda_function.py",
     {

@@ -1,14 +1,17 @@
-import json
+from base64 import b64encode
+
 from requests_html import HTMLSession
 
 
 def lambda_handler(event, context):
     session = HTMLSession()
-    r = session.request(method='GET',
-                        url=event['url'],
-                        headers=event.get('headers', None))
+    response = session.request('GET',
+                               url=event['url'],
+                               headers=event.get('headers', None),
+                               stream=True)
     return {
-        'headers': json.dumps(dict(r.headers)),
-        'statusCode': r.status_code,
-        'body': r.text
+        'headers': dict(response.headers),
+        'statusCode': response.status_code,
+        'body': b64encode(response.raw.read(decode_content=True)),
+        'isBase64Encoded': True
     }

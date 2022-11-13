@@ -1,4 +1,6 @@
 import json
+from base64 import b64decode
+
 import boto3
 
 headers = {
@@ -24,12 +26,14 @@ def get_proxy():
     while True:
         url = yield
         response = json.loads(
-            lambda_client.invoke(FunctionName=f'proxy-{round_robin}',
-                                 InvocationType='RequestResponse',
-                                 Payload=json.dumps({
-                                     "url": url,
-                                     "headers": headers
-                                 }))['Payload'].read())
+            lambda_client.invoke(
+                FunctionName=f'proxy-{round_robin}',
+                InvocationType='RequestResponse',
+                Payload=json.dumps({
+                    "url": url,
+                    "headers": headers
+                }))['Payload'].read())
+        response['body'] = b64decode(response['body'])
         yield response
         round_robin = (round_robin + 1) % num_proxies
 
@@ -39,4 +43,4 @@ if __name__ == '__main__':
     while True:
         proxy.send(None)  # have to do this each time
         response = proxy.send('https://ipinfo.io/ip')
-        print(f'{response["statusCode"]} {response["body"]}')
+        print(f'{response["body"].decode("utf-8")}')
