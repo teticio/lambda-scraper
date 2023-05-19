@@ -5,9 +5,11 @@ from requests_html import HTMLSession
 
 def lambda_handler(event, context):
     session = HTMLSession()
-    response = session.request('GET',
+    response = session.request(method=event.get('method', 'GET'),
                                url=event['url'],
                                headers=event.get('headers', None),
+                               data=event.get('data', None),
+                               json=event.get('json', None),
                                stream=True)
     return {
         'headers': dict(response.headers),

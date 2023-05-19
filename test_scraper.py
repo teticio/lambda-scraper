@@ -30,6 +30,7 @@ def get_proxy():
                 FunctionName=f'proxy-{round_robin}',
                 InvocationType='RequestResponse',
                 Payload=json.dumps({
+                    "method": "GET",
                     "url": url,
                     "headers": headers
                 }))['Payload'].read())
