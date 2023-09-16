@@ -35,8 +35,8 @@ docker build -t lambda-scraper .
 and then run the container
 
 ```bash
-docker run -it -v .:/root -v ~/.aws:/root/.aws lambda-scraper terraform init
-docker run -it -v .:/root -v ~/.aws:/root/.aws lambda-scraper terraform apply -auto-approve
+docker run --rm -it -v .:/root -v ~/.aws:/root/.aws lambda-scraper terraform init
+docker run --rm -it -v .:/root -v ~/.aws:/root/.aws lambda-scraper terraform apply -auto-approve
 ```
 
 An alternative would have been to build the lambda function with `terraform-aws-modules/lambda/aws//modules/docker-build`, but this would have introduced a Docker dependency for non-Mac users. It would also be possible to use `requests` instead of `requests-html`, but the requests would then be more detectable.
