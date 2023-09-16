@@ -36,7 +36,6 @@ module "lambda_proxy" {
   package_type   = "Image"
   architectures  = ["x86_64"]
   timeout        = 180
-  memory_size    = 10240
   hash_extra     = count.index
 }
 
