@@ -35,7 +35,7 @@ module "lambda_proxy" {
   image_uri      = module.docker_image.image_uri
   package_type   = "Image"
   architectures  = ["x86_64"]
-  timeout        = 180
+  timeout        = 30
   hash_extra     = count.index
 }
 
