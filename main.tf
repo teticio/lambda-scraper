@@ -44,9 +44,14 @@ module "docker_image" {
   source          = "terraform-aws-modules/lambda/aws//modules/docker-build"
   create_ecr_repo = true
   ecr_repo        = "lambda-proxy"
-  image_tag       = filesha1("${path.module}/Dockerfile")
   source_path     = "${path.module}/src"
   platform        = "linux/amd64"
+
+  image_tag = sha1(join("", [
+    filesha1("${path.module}/src/requirements.txt"),
+    filesha1("${path.module}/src/lambda_function.py"),
+    filesha1("${path.module}/Dockerfile")
+  ]))
 
   ecr_repo_lifecycle_policy = jsonencode({
     "rules" : [
