@@ -33,3 +33,5 @@ echo $(terraform output -json | jq -r '.lambda_proxy_url.value.function_url')
 ```
 
 For example, if you make a number of cURL request to this URL with `ipinfo.io/ip` appended, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`. You may prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request.
+
+Currently, the Lambda function URLs are publicly accessible, although the hash in the URL serves as a "key". Nevertheless, the `authorization_type` can be changed to `IAM`, which requires signing by an authenticated AWS user with sufficient IAM permissions.
