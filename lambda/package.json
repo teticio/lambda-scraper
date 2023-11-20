@@ -1,0 +1,28 @@
+{
+  "name": "lambda-scraper",
+  "version": "1.0.0",
+  "description": "Use AWS Lambda functions as a proxy pool to scrape web pages.",
+  "main": "proxy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teticio/lambda-scraper.git"
+  },
+  "keywords": [
+    "proxy",
+    "terraform",
+    "lambda-functions",
+    "scraping"
+  ],
+  "author": "Robert Dargavel Smith",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/teticio/lambda-scraper/issues"
+  },
+  "homepage": "https://github.com/teticio/lambda-scraper#readme",
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}

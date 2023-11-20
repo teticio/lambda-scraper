@@ -1,4 +1,6 @@
+.vscode
 terraform.tfvars
 .terraform*
 terraform.tfstate*
-.vscode
+node_modules
+package-lock.json

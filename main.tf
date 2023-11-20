@@ -1,55 +1,40 @@
-terraform {
-  required_providers {
-    aws = {
-      source = "hashicorp/aws"
-    }
-
-    docker = {
-      source = "kreuzwerker/docker"
-    }
-  }
-}
-
-provider "aws" {
-  profile = var.profile
-  region  = var.region
-}
-
-data "aws_caller_identity" "this" {}
-
-data "aws_ecr_authorization_token" "token" {}
-
-provider "docker" {
-  registry_auth {
-    address  = format("%v.dkr.ecr.%v.amazonaws.com", data.aws_caller_identity.this.account_id, var.region)
-    username = data.aws_ecr_authorization_token.token.user_name
-    password = data.aws_ecr_authorization_token.token.password
-  }
-}
-
-module "lambda_proxy" {
+module "lambda_proxy_i" {
   source         = "terraform-aws-modules/lambda/aws"
   count          = var.num_proxies
   function_name  = "proxy-${count.index}"
   create_package = false
-  image_uri      = module.docker_image.image_uri
+  image_uri      = module.ecr_proxy_i.image_uri
   package_type   = "Image"
-  architectures  = ["x86_64"]
-  timeout        = 30
-  hash_extra     = count.index
+  timeout        = 600
+  publish        = true
 }
 
-module "docker_image" {
-  source          = "terraform-aws-modules/lambda/aws//modules/docker-build"
-  create_ecr_repo = true
-  ecr_repo        = "lambda-proxy"
-  source_path     = "${path.module}/src"
-  platform        = "linux/amd64"
+module "lambda_proxy" {
+  source         = "terraform-aws-modules/lambda/aws"
+  function_name  = "proxy"
+  create_package = false
+  image_uri      = module.ecr_proxy.image_uri
+  package_type   = "Image"
+  timeout        = 600
+  publish        = true
+
+  environment_variables = {
+    PROXY_URLS = jsonencode([for url in aws_lambda_function_url.lambda_proxy_i : url.function_url])
+  }
+}
+
+module "ecr_proxy_i" {
+  source           = "terraform-aws-modules/lambda/aws//modules/docker-build"
+  create_ecr_repo  = true
+  ecr_repo         = "lambda-proxy-i"
+  source_path      = "${path.module}/lambda"
+  docker_file_path = "Dockerfile-i"
+  platform         = "linux/amd64"
 
   image_tag = sha1(join("", [
-    filesha1("${path.module}/src/requirements.txt"),
-    filesha1("${path.module}/src/lambda_function.py"),
-    filesha1("${path.module}/Dockerfile")
+    filesha1("${path.module}/lambda/package.json"),
+    filesha1("${path.module}/lambda/proxy-i.js"),
+    filesha1("${path.module}/lambda/Dockerfile-i"),
   ]))
 
   ecr_repo_lifecycle_policy = jsonencode({
@@ -68,4 +53,49 @@ module "docker_image" {
       }
     ]
   })
+}
+
+module "ecr_proxy" {
+  source           = "terraform-aws-modules/lambda/aws//modules/docker-build"
+  create_ecr_repo  = true
+  ecr_repo         = "lambda-proxy"
+  source_path      = "${path.module}/lambda"
+  docker_file_path = "Dockerfile"
+  platform         = "linux/amd64"
+
+  image_tag = sha1(join("", [
+    filesha1("${path.module}/lambda/package.json"),
+    filesha1("${path.module}/lambda/proxy.js"),
+    filesha1("${path.module}/lambda/Dockerfile"),
+  ]))
+
+  ecr_repo_lifecycle_policy = jsonencode({
+    "rules" : [
+      {
+        "rulePriority" : 1,
+        "description" : "Keep only the last 1 image",
+        "selection" : {
+          "tagStatus" : "any",
+          "countType" : "imageCountMoreThan",
+          "countNumber" : 1
+        },
+        "action" : {
+          "type" : "expire"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_function_url" "lambda_proxy_i" {
+  count              = var.num_proxies
+  function_name      = module.lambda_proxy_i[count.index].lambda_function_name
+  authorization_type = "NONE"
+  invoke_mode        = "RESPONSE_STREAM"
+}
+
+resource "aws_lambda_function_url" "lambda_proxy" {
+  function_name      = module.lambda_proxy.lambda_function_name
+  authorization_type = "NONE"
+  invoke_mode        = "RESPONSE_STREAM"
 }
