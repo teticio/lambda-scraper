@@ -10,13 +10,23 @@ module "lambda_proxy_i" {
 }
 
 module "lambda_proxy" {
-  source         = "terraform-aws-modules/lambda/aws"
-  function_name  = "proxy"
-  create_package = false
-  image_uri      = module.ecr_proxy.image_uri
-  package_type   = "Image"
-  timeout        = 600
-  publish        = true
+  source             = "terraform-aws-modules/lambda/aws"
+  function_name      = "proxy"
+  create_package     = false
+  image_uri          = module.ecr_proxy.image_uri
+  package_type       = "Image"
+  timeout            = 600
+  publish            = true
+  attach_policy_json = true
+
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "lambda:InvokeFunctionUrl"
+      Resource = [for url in aws_lambda_function_url.lambda_proxy_i : url.function_arn]
+    }]
+  })
 
   environment_variables = {
     PROXY_URLS = jsonencode([for url in aws_lambda_function_url.lambda_proxy_i : url.function_url])
@@ -90,7 +100,7 @@ module "ecr_proxy" {
 resource "aws_lambda_function_url" "lambda_proxy_i" {
   count              = var.num_proxies
   function_name      = module.lambda_proxy_i[count.index].lambda_function_name
-  authorization_type = "NONE"
+  authorization_type = "AWS_IAM"
   invoke_mode        = "RESPONSE_STREAM"
 }
 

@@ -23,6 +23,9 @@
   },
   "homepage": "https://github.com/teticio/lambda-scraper#readme",
   "dependencies": {
+    "@aws-crypto/sha256-js": "^5.2.0",
+    "@aws-sdk/credential-provider-node": "^3.451.0",
+    "@smithy/signature-v4": "^2.0.15",
     "axios": "^1.6.2"
   }
 }

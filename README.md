@@ -26,12 +26,21 @@ You can specify an `AWS_PROFILE` and `AWS_REGION` with
 terraform apply -auto-approve -var 'region=AWS_REGION' -var 'profile=AWS_PROFILE'
 ```
 
-To obtain the URL of the `proxy` Lambda function, run
+The `proxy` Lambda function forwards the requests to a random `proxy-<i>` Lambda function. To obtain its URL, run
 
 ```bash
 echo $(terraform output -json | jq -r '.lambda_proxy_url.value.function_url')
 ```
 
-For example, if you make a number of cURL request to this URL with `ipinfo.io/ip` appended, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`. You may prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request.
+For example, if you make a number of cURL requests to this URL with `ipinfo.io/ip` appended, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`.
 
-Currently, the Lambda function URLs are publicly accessible, although the hash in the URL serves as a "key". Nevertheless, the `authorization_type` can be changed to `AWS_IAM`, which requires signing by an authenticated AWS user with sufficient IAM permissions.
+## Authentication
+
+Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in the `proxy.js` and `test_with_iam.py`.
+
+```bash
+pip install -r requirements.txt
+python test_with_iam.py <lambda_proxy_url>
+```
+
+If you decide to also enforce IAM authentication for the `proxy` Lambda function URL, it is a simple matter of changing the `authorization_type` to `AWS_IAM` in `main.tf`.

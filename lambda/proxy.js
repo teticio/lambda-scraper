@@ -4,26 +4,40 @@ if (typeof (awslambda) === 'undefined') {
 }
 const axios = require('axios');
 const pipeline = require('util').promisify(require('stream').pipeline);
+const { defaultProvider } = require("@aws-sdk/credential-provider-node");
+const { SignatureV4 } = require("@smithy/signature-v4");
+const { Sha256 } = require("@aws-crypto/sha256-js");
 const proxy_urls = JSON.parse(process.env.PROXY_URLS);
 
 exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     try {
         const random = Math.floor(Math.random() * proxy_urls.length);
-        const proxy_url = proxy_urls[random];
+        const proxy_url = new URL(proxy_urls[random]);
         console.log('proxy-' + String(random) + ': ' + proxy_url);
         let headers = Object.fromEntries(Object.entries(event.headers).filter(
-            ([key]) => !key.startsWith('x-') && key.toLowerCase() !== 'host'
+            ([key]) => !key.startsWith('x-')
         ));
+        headers['host'] = proxy_url.hostname;
+        const httpRequest = {
+            method: event.requestContext.http.method,
+            path: event.rawPath,
+            url: proxy_url + event.rawPath.substring(1) + (event.rawQueryString ? '?' + event.rawQueryString : ''),
+            data: event.body || '',
+            headers: headers,
+            responseType: 'stream',
+            timeout: 600 * 1000, // 10 minutes
+        };
+        const credentials = await defaultProvider()();
+        const signer = new SignatureV4({
+            credentials: credentials,
+            region: process.env.AWS_REGION,
+            service: 'lambda',
+            sha256: Sha256,
+        });
+        const signedRequest = await signer.sign(httpRequest);
         let httpResponse;
         try {
-            httpResponse = await axios({
-                method: event.requestContext.http.method,
-                url: proxy_url + event.rawPath.substring(1) + (event.rawQueryString ? '?' + event.rawQueryString : ''),
-                data: event.body || '',
-                headers: headers,
-                responseType: 'stream',
-                timeout: 600 * 1000, // 10 minutes
-            });
+            httpResponse = await axios(signedRequest);
         } catch (error) {
             if (error.response) {
                 await pipeline(

@@ -14,6 +14,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         try {
             httpResponse = await axios({
                 method: event.requestContext.http.method,
+                path: event.rawPath,
                 url: 'https:/' + event.rawPath + (event.rawQueryString ? '?' + event.rawQueryString : ''),
                 data: event.body || '',
                 headers: headers,
