@@ -21,8 +21,11 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
 
         const httpRequest = {
             method: event.requestContext.http.method,
-            path: event.rawPath,
-            url: proxy_url + event.rawPath.substring(1) + (event.rawQueryString ? '?' + event.rawQueryString : ''),
+            path: event.rawPath, // needed for SignatureV4
+            url: proxy_url + event.rawPath.substring(1),
+            query: event.queryStringParameters, // needed for SignatureV4
+            params: event.queryStringParameters,
+            body: event.body || '', // needed for SignatureV4
             data: event.body || '',
             headers: headers,
             responseType: 'stream',
@@ -85,7 +88,7 @@ if (require.main === module) { // For testing
         headers: {},
         requestContext: {
             http: {
-                method: 'GET',
+                method: 'POST',
             }
         }
     };
