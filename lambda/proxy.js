@@ -18,6 +18,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
             ([key]) => !key.startsWith('x-')
         ));
         headers['host'] = proxy_url.hostname;
+
         const httpRequest = {
             method: event.requestContext.http.method,
             path: event.rawPath,
@@ -27,6 +28,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
             responseType: 'stream',
             timeout: 600 * 1000, // 10 minutes
         };
+
         const credentials = await defaultProvider()();
         const signer = new SignatureV4({
             credentials: credentials,
@@ -35,6 +37,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
             sha256: Sha256,
         });
         const signedRequest = await signer.sign(httpRequest);
+
         let httpResponse;
         try {
             httpResponse = await axios(signedRequest);
@@ -54,6 +57,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         headers = Object.fromEntries(Object.entries(httpResponse.headers).filter(
             ([key]) => !key.startsWith('x-')
         ));
+
         await pipeline(
             httpResponse.data,
             awslambda.HttpResponseStream.from(responseStream, {
@@ -61,6 +65,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
                 headers: headers,
             }),
         );
+
     } catch (error) {
         console.error(error);
         responseStream = awslambda.HttpResponseStream.from(responseStream, {

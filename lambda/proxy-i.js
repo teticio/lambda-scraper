@@ -10,17 +10,20 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         let headers = Object.fromEntries(Object.entries(event.headers).filter(
             ([key]) => !key.startsWith('x-') && key.toLowerCase() !== 'host'
         ));
+
+        const httpRequest = {
+            method: event.requestContext.http.method,
+            path: event.rawPath,
+            url: 'https:/' + event.rawPath + (event.rawQueryString ? '?' + event.rawQueryString : ''),
+            data: event.body || '',
+            headers: headers,
+            responseType: 'stream',
+            timeout: 600 * 1000, // 10 minutes
+        }
+
         let httpResponse;
         try {
-            httpResponse = await axios({
-                method: event.requestContext.http.method,
-                path: event.rawPath,
-                url: 'https:/' + event.rawPath + (event.rawQueryString ? '?' + event.rawQueryString : ''),
-                data: event.body || '',
-                headers: headers,
-                responseType: 'stream',
-                timeout: 600 * 1000, // 10 minutes
-            });
+            httpResponse = await axios(httpRequest);
         } catch (error) {
             if (error.response) {
                 await pipeline(
@@ -37,7 +40,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         headers = Object.fromEntries(Object.entries(httpResponse.headers).filter(
             ([key]) => !key.startsWith('x-')
         ));
-        delete headers['content-length'];
+
         await pipeline(
             httpResponse.data,
             awslambda.HttpResponseStream.from(responseStream, {
@@ -45,6 +48,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
                 headers: headers,
             }),
         );
+
     } catch (error) {
         console.error(error);
         responseStream = awslambda.HttpResponseStream.from(responseStream, {
