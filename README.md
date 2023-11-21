@@ -29,7 +29,7 @@ terraform apply -auto-approve -var 'region=AWS_REGION' -var 'profile=AWS_PROFILE
 The `proxy` Lambda function forwards the requests to a random `proxy-<i>` Lambda function. To obtain its URL, run
 
 ```bash
-echo $(terraform output -json | jq -r '.lambda_proxy_url.value.function_url')
+echo $(terraform output -json | jq -r '.lambda_proxy_url.value')
 ```
 
 For example, if you make a number of cURL requests to this URL with `ipinfo.io/ip` appended, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`.
