@@ -7,22 +7,22 @@ const pipeline = require('util').promisify(require('stream').pipeline);
 const { defaultProvider } = require("@aws-sdk/credential-provider-node");
 const { SignatureV4 } = require("@smithy/signature-v4");
 const { Sha256 } = require("@aws-crypto/sha256-js");
-const proxy_urls = JSON.parse(process.env.PROXY_URLS);
+const { proxyUrls } = require('./proxy-urls');
 
 exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     try {
-        const random = Math.floor(Math.random() * proxy_urls.length);
-        const proxy_url = new URL(proxy_urls[random]);
-        console.log('proxy-' + String(random) + ': ' + proxy_url);
+        const random = Math.floor(Math.random() * proxyUrls.length);
+        const proxyUrl = new URL(proxyUrls[random]);
+        console.log('proxy-' + String(random) + ': ' + proxyUrl);
         let headers = Object.fromEntries(Object.entries(event.headers).filter(
             ([key]) => !key.startsWith('x-')
         ));
-        headers['host'] = proxy_url.hostname;
+        headers['host'] = proxyUrl.hostname;
 
         const httpRequest = {
             method: event.requestContext.http.method,
             path: event.rawPath, // needed for SignatureV4
-            url: proxy_url + event.rawPath.substring(1),
+            url: proxyUrl + event.rawPath.substring(1),
             query: event.queryStringParameters, // needed for SignatureV4
             params: event.queryStringParameters,
             body: event.body || '', // needed for SignatureV4
@@ -88,7 +88,7 @@ if (require.main === module) { // For testing
         headers: {},
         requestContext: {
             http: {
-                method: 'POST',
+                method: 'GET',
             }
         }
     };

@@ -20,10 +20,12 @@ terraform apply -auto-approve
 # run "terraform apply -destroy -auto-approve" in the same directory to tear all this down again
 ```
 
-You can specify an `AWS_PROFILE` and `AWS_REGION` with
+You can specify the AWS region and profile as well as the number of proxies in a `terraform.tfvars` file:
 
-```bash
-terraform apply -auto-approve -var 'region=AWS_REGION' -var 'profile=AWS_PROFILE'
+```terraform
+num_proxies = 10
+region      = "eu-west-2"
+profile     = "default"
 ```
 
 The `proxy` Lambda function forwards the requests to a random `proxy-<i>` Lambda function. To obtain its URL, run
@@ -36,7 +38,7 @@ For example, if you make a number of cURL requests to this URL with `ipinfo.io/i
 
 ## Authentication
 
-Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in the `proxy.js` and `test_with_iam.py`.
+Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in the `proxy.js` and `test_with_iam.py`. The list of underlying proxy URLs can be found in `lambda/proxy-urls.js`.
 
 ```bash
 pip install -r requirements.txt

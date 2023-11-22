@@ -9,6 +9,19 @@ module "lambda_proxy_i" {
   publish        = true
 }
 
+data "template_file" "proxy_urls" {
+  template = file("${path.module}/lambda/proxy-urls.tpl")
+
+  vars = {
+    PROXY_URLS = join("\n", [for url in aws_lambda_function_url.lambda_proxy_i : url.function_url])
+  }
+}
+
+resource "local_file" "proxy_urls" {
+  content  = data.template_file.proxy_urls.rendered
+  filename = "${path.module}/lambda/proxy-urls.js"
+}
+
 module "lambda_proxy" {
   source             = "terraform-aws-modules/lambda/aws"
   function_name      = "proxy"
@@ -27,10 +40,6 @@ module "lambda_proxy" {
       Resource = [for url in aws_lambda_function_url.lambda_proxy_i : url.function_arn]
     }]
   })
-
-  environment_variables = {
-    PROXY_URLS = jsonencode([for url in aws_lambda_function_url.lambda_proxy_i : url.function_url])
-  }
 }
 
 module "ecr_proxy_i" {
@@ -72,10 +81,12 @@ module "ecr_proxy" {
   source_path      = "${path.module}/lambda"
   docker_file_path = "Dockerfile"
   platform         = "linux/amd64"
+  depends_on       = [local_file.proxy_urls]
 
   image_tag = sha1(join("", [
     filesha1("${path.module}/lambda/package.json"),
     filesha1("${path.module}/lambda/proxy.js"),
+    fileexists("${path.module}/lambda/proxy-urls.js") ? filesha1("${path.module}/lambda/proxy-urls.js") : "",
     filesha1("${path.module}/lambda/Dockerfile"),
   ]))
 
