@@ -13,7 +13,7 @@ data "template_file" "proxy_urls" {
   template = file("${path.module}/lambda/proxy-urls.tpl")
 
   vars = {
-    PROXY_URLS = join("\n", [for url in aws_lambda_function_url.lambda_proxy_i : url.function_url])
+    PROXY_URLS = join("\n", aws_lambda_function_url.lambda_proxy_i[*].function_url)
   }
 }
 
@@ -37,7 +37,7 @@ module "lambda_proxy" {
     Statement = [{
       Effect   = "Allow"
       Action   = "lambda:InvokeFunctionUrl"
-      Resource = [for url in aws_lambda_function_url.lambda_proxy_i : url.function_arn]
+      Resource = aws_lambda_function_url.lambda_proxy_i[*].function_arn
     }]
   })
 }
