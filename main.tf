@@ -10,7 +10,7 @@ module "lambda_proxy_i" {
 }
 
 data "template_file" "proxy_urls" {
-  template = file("${path.module}/lambda/proxy-urls.tpl")
+  template = file("${path.module}/lambda/proxy-urls.tftpl")
 
   vars = {
     PROXY_URLS = join("\n", aws_lambda_function_url.lambda_proxy_i[*].function_url)
