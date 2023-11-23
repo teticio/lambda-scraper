@@ -34,11 +34,17 @@ The `proxy` Lambda function forwards the requests to a random `proxy-<i>` Lambda
 echo $(terraform output -json | jq -r '.lambda_proxy_url.value')
 ```
 
-For example, if you make a number of cURL requests to this URL with `ipinfo.io/ip` appended, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`.
+Then you can make requests via the proxy by pre-pending the URL.
+
+```
+curl https://<hash>.lambda-url.<region>.on.aws/ipinfo.io/ip
+```
+
+If you make a number of cURL requests to this URL, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`.
 
 ## Authentication
 
-Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in the `proxy.js` and `test_with_iam.py`. The list of underlying proxy URLs can be found in `lambda/proxy-urls.js`.
+Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed directly by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in the `proxy.js` and `test_with_iam.py`. The list of underlying proxy URLs can be found in `lambda/proxy-urls.js`.
 
 ```bash
 pip install -r requirements.txt
