@@ -1,4 +1,4 @@
-import sys
+import json
 
 import boto3
 import requests
@@ -11,10 +11,11 @@ aws_auth = AWS4Auth(
     refreshable_credentials=session.get_credentials(),
 )
 
+proxy_urls = json.loads(open("lambda/proxy-urls.json").read())
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 test_with_iam.py <lambda_proxy_url>")
-        sys.exit(1)
-    lambda_function_url = sys.argv[1]
-    response = requests.get(lambda_function_url + "ipinfo.io/ip", auth=aws_auth)
-    print(response.text)
+    index = 0
+    while True:
+        response = requests.get(proxy_urls[index] + "ipinfo.io/ip", auth=aws_auth)
+        print(response.text)
+        index = (index + 1) % len(proxy_urls)

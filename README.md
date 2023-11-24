@@ -48,7 +48,7 @@ Currently, the `proxy` Lambda function URL is configured to be publicly accessib
 
 ```bash
 pip install -r requirements.txt
-python test_with_iam.py <lambda_proxy_url>
+python test_with_iam.py
 ```
 
 If you decide to also enforce IAM authentication for the `proxy` Lambda function URL, it is a simple matter of changing the `authorization_type` to `AWS_IAM` in `main.tf`.
