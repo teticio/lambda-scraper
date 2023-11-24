@@ -7,7 +7,7 @@ const pipeline = require('util').promisify(require('stream').pipeline);
 const { defaultProvider } = require("@aws-sdk/credential-provider-node");
 const { SignatureV4 } = require("@smithy/signature-v4");
 const { Sha256 } = require("@aws-crypto/sha256-js");
-const { proxyUrls } = require('./proxy-urls');
+const proxyUrls = require('./proxy-urls.json');
 
 exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     try {
@@ -21,11 +21,11 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
 
         const httpRequest = {
             method: event.requestContext.http.method,
-            path: event.rawPath, // needed for SignatureV4
+            path: event.rawPath, // Needed for SignatureV4
             url: proxyUrl + event.rawPath.substring(1),
-            query: event.queryStringParameters, // needed for SignatureV4
+            query: event.queryStringParameters, // Needed for SignatureV4
             params: event.queryStringParameters,
-            body: event.body || '', // needed for SignatureV4
+            body: event.body || '', // Needed for SignatureV4
             data: event.body || '',
             headers: headers,
             responseType: 'stream',
