@@ -52,3 +52,35 @@ python test_with_iam.py
 ```
 
 If you decide to also enforce IAM authentication for the `proxy` Lambda function URL, it is a simple matter of changing the `authorization_type` to `AWS_IAM` in `main.tf`.
+
+## Concurrency
+
+The ability to call the Lambda functions asynchronously allows us to make many requests in parallel without resorting to multi-threading. Of course, without the use of a proxy, the requests would be rate limited. In Python you can use the `aiohttp` library to make asynchronous HTTP requests as follows:
+
+```python
+import asyncio
+
+import aiohttp
+
+# Replace with your proxy URL
+PROXY = "https://<hash>.lambda-url.<region>.on.aws/"
+
+
+async def fetch(session, url):
+    async with session.get(url) as response:
+        return await response.text()
+
+
+async def fetch_all(urls):
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch(session, url.replace("http://", PROXY)) for url in urls]
+        htmls = await asyncio.gather(*tasks)
+    return htmls
+
+
+urls = [
+    "https://www.bbc.co.uk/news",
+    "https://www.bbc.co.uk/news/uk",
+]
+print(asyncio.run(fetch_all(urls)))
+```
