@@ -55,7 +55,7 @@ If you decide to also enforce IAM authentication for the `proxy` Lambda function
 
 ## Concurrency
 
-The ability to call the Lambda functions asynchronously allows us to make many requests in parallel without resorting to multi-threading. Of course, without the use of a proxy, the requests would be rate limited. In Python you can use the `aiohttp` library to make asynchronous HTTP requests as follows:
+The ability to call the Lambda functions asynchronously makes numerous parallel requests possible without resorting to multi-threading, while the proxy avoids being rate limited. In Python you can use the `aiohttp` library to make asynchronous HTTP requests as follows:
 
 ```python
 import asyncio
