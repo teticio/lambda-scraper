@@ -73,7 +73,7 @@ async def fetch(session, url):
 
 async def fetch_all(urls):
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch(session, url.replace("http://", PROXY)) for url in urls]
+        tasks = [fetch(session, url.replace("https://", PROXY)) for url in urls]
         htmls = await asyncio.gather(*tasks)
     return htmls
 
