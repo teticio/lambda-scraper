@@ -44,7 +44,7 @@ If you make a number of cURL requests to this URL, you should see several differ
 
 ## Authentication
 
-Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed directly by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in the `proxy.js` and `test_with_iam.py`. The list of underlying proxy URLs created by Terraform can be found in `lambda/proxy-urls.json`.
+Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed directly by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in `proxy.js` and `test_with_iam.py`. The list of underlying proxy URLs created by Terraform can be found in `lambda/proxy-urls.json`.
 
 ```bash
 pip install -r requirements.txt
