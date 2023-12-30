@@ -11,7 +11,7 @@ require("dotenv").config();
   });
 
   server.forAnyRequest().thenPassThrough({
-    beforeRequest: (req) => {
+    beforeRequest: req => {
       const url = new URL(req.url);
       console.log(url.toString());
       url.pathname = url.host + url.pathname;
