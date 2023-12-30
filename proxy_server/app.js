@@ -14,8 +14,9 @@ require("dotenv").config();
         beforeRequest: req => {
             const url = new URL(req.url);
             console.log(url.toString());
-            url.pathname = url.host + url.pathname;
+            url.pathname = url.protocol + "//" + url.host + url.pathname;
             url.host = process.env.PROXY_HOST;
+            url.protocol = "https";
             const headers = req.headers;
             headers.host = url.host;
             return {
