@@ -84,3 +84,17 @@ urls = [
 ]
 print(asyncio.run(fetch_all(urls)))
 ```
+
+openssl req -x509 -new -nodes -keyout testCA.key -sha256 -days 365 -out testCA.pem -subj '/CN=Mockttp Testing CA - DO NOT TRUST'
+
+.env
+PROXY_HOST=...
+
+Trust, port
+
+cd proxy_server
+npm install mockttp
+node app.js --env-file ../.env
+
+http, https
+netlfix login clash with AWS sig

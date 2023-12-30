@@ -5,3 +5,6 @@ terraform.tfstate*
 node_modules
 package-lock.json
 proxy-urls.json
+testCA.key
+testCA.pem
+.env
