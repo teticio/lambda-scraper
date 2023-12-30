@@ -13,7 +13,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
 
         const httpRequest = {
             method: event.requestContext.http.method,
-            url: 'https:/' + event.rawPath,
+            url: (event.rawPath.startsWith('/http')) ? event.rawPath.substring(1) : 'https:/' + event.rawPath,
             params: event.queryStringParameters,
             data: event.body || '',
             headers: headers,

@@ -85,9 +85,9 @@ urls = [
 print(asyncio.run(fetch_all(urls)))
 ```
 
-## Serverless VPN
+## "Serverless VPN"
 
-It is possible to set up a proxy server that forwards all HTTPS requests to the Lambda proxy. To do this, first create a Certificate Authority with
+It is possible to set up a proxy server that forwards all HTTP requests to the Lambda proxy. (Note that websocket connections are not proxied... yet.) To do this, first create a Certificate Authority with
 
 ```bash
 openssl req -x509 -new -nodes -keyout testCA.key -sha256 -days 365 -out testCA.pem -subj '/CN=Mockttp Testing CA - DO NOT TRUST'
@@ -104,11 +104,12 @@ install the Node.JS packages
 ```bash
 cd proxy_server
 npm install mockttp
+cd -
 ```
 and run the server with
 
 ```bash
-node app.js --env-file ../.env
+node proxy_server/app.js --env-file .env
 ```
 
 You should now be able to navigate to a webpage with your browser and all the requests will be proxied via the Lambda function.
@@ -116,3 +117,4 @@ You should now be able to navigate to a webpage with your browser and all the re
 ### TODO
 * http, https
 * clash with AWS signature (e.g. Netflix)
+* websockets?
