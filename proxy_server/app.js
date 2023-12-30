@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 (async () => {
     const mockttp = require("mockttp");
 

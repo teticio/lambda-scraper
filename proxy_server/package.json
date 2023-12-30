@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "dotenv": "^16.3.1",
     "mockttp": "^3.10.0"
   }
 }
