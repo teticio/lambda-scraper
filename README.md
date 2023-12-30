@@ -115,6 +115,5 @@ node proxy_server/app.js --env-file .env
 You should now be able to navigate to a webpage with your browser and all the requests will be proxied via the Lambda function.
 
 ### TODO
-* http, https
 * clash with AWS signature (e.g. Netflix)
 * websockets?
