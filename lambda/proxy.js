@@ -11,8 +11,6 @@ const proxyUrls = require('./proxy-urls.json');
 
 exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     try {
-        console.log(JSON.stringify(event, null, 2));
-        console.log(JSON.stringify(context, null, 2));
         const random = Math.floor(Math.random() * proxyUrls.length);
         const proxyUrl = new URL(proxyUrls[random]);
         console.log('proxy-' + String(random) + ': ' + proxyUrl);

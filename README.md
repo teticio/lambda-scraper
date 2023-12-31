@@ -36,8 +36,10 @@ echo $(terraform output -json | jq -r '.lambda_proxy_url.value')
 
 Then you can make requests via the proxy by pre-pending the URL.
 
-```
+```bash
 curl https://<hash>.lambda-url.<region>.on.aws/ipinfo.io/ip
+# or
+curl https://<hash>.lambda-url.<region>.on.aws/http://ipinfo.io/ip
 ```
 
 If you make a number of cURL requests to this URL, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`. You will notice that there is a cold start latency the first time each Lambda function is invoked.
@@ -85,9 +87,9 @@ urls = [
 print(asyncio.run(fetch_all(urls)))
 ```
 
-## "Serverless VPN"
+## "Serverless VPN" (well, almost)
 
-It is possible to set up a proxy server that forwards all HTTP requests to the Lambda proxy. (Note that websocket connections are not proxied... yet.) To do this, first create a Certificate Authority with
+It is possible to set up a proxy server that forwards all HTTP requests (but not websockets) to the Lambda proxy. To do this, first create a Certificate Authority with
 
 ```bash
 openssl req -x509 -new -nodes -keyout testCA.key -sha256 -days 365 -out testCA.pem -subj '/CN=Mockttp Testing CA - DO NOT TRUST'
@@ -103,17 +105,13 @@ install the Node.JS packages
 
 ```bash
 cd proxy_server
-npm install mockttp
+npm install
 cd -
 ```
 and run the server with
 
 ```bash
-node proxy_server/app.js --env-file .env
+node proxy_server/app.js
 ```
 
-You should now be able to navigate to a webpage with your browser and all the requests will be proxied via the Lambda function.
-
-### TODO
-* clash with AWS signature (e.g. Netflix)
-* websockets?
+You should now be able to navigate to a webpage with your browser and all the HTTP requests will be proxied via the Lambda function. Note that some sensitive endpoints may not work (for example if they use a pre-signed URL). You can toggle the proxy on and off by pressing `X`.
