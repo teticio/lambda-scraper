@@ -1,15 +1,22 @@
-(async () => {
-    const mockttp = require("mockttp");
+require('dotenv').config();
+const mockttp = require("mockttp");
+const readline = require('readline');
 
-    const server = mockttp.getLocal({
-        https: {
-            keyPath: "testCA.key",
-            certPath: "testCA.pem",
-        },
-    });
+readline.emitKeypressEvents(process.stdin);
+process.stdin.setRawMode(true);
 
-    server.forAnyRequest().thenPassThrough({
-        beforeRequest: req => {
+let proxyEnabled = true;
+
+const server = mockttp.getLocal({
+    https: {
+        keyPath: "testCA.key",
+        certPath: "testCA.pem",
+    },
+});
+
+server.forAnyRequest().thenPassThrough({
+    beforeRequest: req => {
+        if (proxyEnabled) {
             const url = new URL(req.url);
             console.log(url.toString());
             url.pathname = url.protocol + "//" + url.host + url.pathname;
@@ -22,10 +29,24 @@
                 headers: headers,
                 url: url.toString(),
             };
-        },
-    });
+        } else {
+            return req;
+        }
+    },
+});
 
+(async () => {
     await server.start(8080);
     console.log(`Server running on port ${server.port}`);
     console.log(`Proxying to ${process.env.PROXY_HOST}`);
 })();
+
+process.stdin.on('keypress', (str, key) => {
+    if (key.name === 'x') {
+        proxyEnabled = !proxyEnabled;
+        console.log(`Proxy is now ${proxyEnabled ? 'enabled' : 'disabled'}`);
+    }
+    if (key.ctrl && key.name === 'c') {
+        process.exit();
+    }
+});
