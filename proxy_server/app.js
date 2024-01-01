@@ -24,7 +24,7 @@ server.forAnyRequest().thenPassThrough({
             url.protocol = "https";
             const headers = Object.fromEntries(
                 Object.entries(req.headers)
-                .map(([key, value]) => [key.startsWith('x-')? 'lambda-scraper-' + key: key, value])
+                    .map(([key, value]) => [key.startsWith('x-') ? 'lambda-scraper-' + key : key, value])
             );
             headers['lambda-scraper-host'] = headers.host
             headers.host = url.host;
@@ -42,8 +42,8 @@ server.forAnyRequest().thenPassThrough({
         if (proxyEnabled) {
             const headers = Object.fromEntries(
                 Object.entries(req.headers)
-                .filter(([key]) => !key.startsWith('x-'))
-                .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
+                    .filter(([key]) => !key.startsWith('x-'))
+                    .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
             );
         }
     }
