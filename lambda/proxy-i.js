@@ -7,18 +7,25 @@ const pipeline = require('util').promisify(require('stream').pipeline);
 
 exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     try {
-        let headers = Object.fromEntries(Object.entries(event.headers).filter(
-            ([key]) => !key.startsWith('x-') && key.toLowerCase() !== 'host'
-        ));
-
+        const rawQueryString = event.headers['lambda-scraper-raw-query-string'] ? event.headers['lambda-scraper-raw-query-string'] : event.rawQueryString;
+        let headers = Object.fromEntries(
+            Object.entries(event.headers)
+                .filter(([key]) => !key.startsWith('x-') && key.toLowerCase() !== 'host' && key !== 'lambda-scraper-raw-query-string')
+                .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
+        );
+        let url = event.rawPath.startsWith('/http') ? event.rawPath.substring(1) : 'https:/' + event.rawPath;
+        if (rawQueryString) {
+            url += '?' + rawQueryString;
+        }
         const httpRequest = {
             method: event.requestContext.http.method,
-            url: event.rawPath.startsWith('/http') ? event.rawPath.substring(1) : 'https:/' + event.rawPath,
-            params: event.queryStringParameters,
-            data: event.body || '',
+            url: url,
             headers: headers,
             responseType: 'stream',
             timeout: 600 * 1000, // 10 minutes
+        }
+        if (event.body) {
+            httpRequest.data = event.body;
         }
 
         let httpResponse;
@@ -37,8 +44,8 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
             }
             throw error;
         }
-        headers = Object.fromEntries(Object.entries(httpResponse.headers).filter(
-            ([key]) => !key.startsWith('x-')
+        headers = Object.fromEntries(Object.entries(httpResponse.headers).map(
+            ([key, value]) => key.startsWith('x-') ? ['lambda-scraper-' + key, value] : [key, value]
         ));
 
         await pipeline(

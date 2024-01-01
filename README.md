@@ -44,6 +44,10 @@ curl https://<hash>.lambda-url.<region>.on.aws/http://ipinfo.io/ip
 
 If you make a number of cURL requests to this URL, you should see several different IP addresses. A script that does exactly this is provided in `test.sh`. You will notice that there is a cold start latency the first time each Lambda function is invoked.
 
+## Headers
+
+Certain headers (`host` and those starting with `x-`) are stripped out because they interfere with the mechanism AWS uses to invoke the endpoint via HTTP. If you need these headers to be set in your request, you can do so by preceding them with `lambda-scraper-` (e.g. `lambda-scraper-host: example.com`). A special header `lambda-scraper-raw-query-params` is used to ensure the query parameters are passed through unaltered by encoding and decoding. Similarly, some response headers (those starting with `x-`) are mapped to `lambda-scraper-` so that they can be returned without affecting the response itself.
+
 ## Authentication
 
 Currently, the `proxy` Lambda function URL is configured to be publicly accessible, although the hash in the URL serves as a "key". The underlying `proxy-<i>` Lambda function URLs can only be accessed directly by signing the request with the appropriate AWS credentials. If you prefer to cycle through the underlying proxy URLs explicitly and avoid going through two Lambda functions per request, examples of how to sign the request are provided in `proxy.js` and `test_with_iam.py`. The list of underlying proxy URLs created by Terraform can be found in `lambda/proxy-urls.json`.

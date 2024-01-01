@@ -14,23 +14,31 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         const random = Math.floor(Math.random() * proxyUrls.length);
         const proxyUrl = new URL(proxyUrls[random]);
         console.log('proxy-' + String(random) + ': ' + proxyUrl);
-        let headers = Object.fromEntries(Object.entries(event.headers).filter(
-            ([key]) => !key.startsWith('x-')
-        ));
+        let headers = Object.fromEntries(
+            Object.entries(event.headers)
+                .filter(([key]) => !key.startsWith('x-'))
+                .map(([key, value]) => [key.toLowerCase() === 'authorization' ? 'lambda-scraper-' + key : key, value])
+        );
         headers['host'] = proxyUrl.hostname;
 
+        // URL encoding and decoding can be ambiguous (e.g. type=a&type=b becomes type=a,b)
+        // Signing would force us the query string parameters as encoded by AWS
+        // so we pass the raw query string in a header instead
+        headers['lambda-scraper-raw-query-string'] = event.rawQueryString;
         const httpRequest = {
             method: event.requestContext.http.method,
             path: event.rawPath, // Needed for SignatureV4
             url: proxyUrl + event.rawPath.substring(1),
-            query: event.queryStringParameters, // Needed for SignatureV4
-            params: event.queryStringParameters,
-            body: event.body || '', // Needed for SignatureV4
-            data: event.body || '',
+            // query: event.queryStringParameters, // Needed for SignatureV4
+            // params: event.queryStringParameters,
             headers: headers,
             responseType: 'stream',
             timeout: 600 * 1000, // 10 minutes
         };
+        if (event.body) {
+            httpRequest.body = event.body; // Needed for SignatureV4
+            httpRequest.data = event.body;
+        }
 
         const credentials = await defaultProvider()();
         const signer = new SignatureV4({
