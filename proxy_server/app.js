@@ -22,7 +22,11 @@ server.forAnyRequest().thenPassThrough({
             url.pathname = url.protocol + "//" + url.host + url.pathname;
             url.host = process.env.PROXY_HOST;
             url.protocol = "https";
-            const headers = req.headers;
+            const headers = Object.fromEntries(
+                Object.entries(req.headers)
+                .map(([key, value]) => [key.startsWith('x-')? 'lambda-scraper-' + key: key, value])
+            );
+            headers['lambda-scraper-host'] = headers.host
             headers.host = url.host;
             return {
                 ...req,
@@ -33,7 +37,19 @@ server.forAnyRequest().thenPassThrough({
             return req;
         }
     },
+
+    afterRequest: req => {
+        if (proxyEnabled) {
+            const headers = Object.fromEntries(
+                Object.entries(req.headers)
+                .filter(([key]) => !key.startsWith('x-'))
+                .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
+            );
+        }
+    }
 });
+
+server.forAnyWebSocket().thenPassThrough();
 
 (async () => {
     await server.start(8080);
