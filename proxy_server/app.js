@@ -38,19 +38,19 @@ server.forAnyRequest().thenPassThrough({
         }
     },
 
-    afterRequest: req => {
+    beforeResponse: res => {
         if (proxyEnabled) {
             const headers = Object.fromEntries(
-                Object.entries(req.headers)
+                Object.entries(res.headers)
                     .filter(([key]) => !key.toLowerCase().startsWith('x-amz'))
                     .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
             );
             return {
-                ...req,
+                ...res,
                 headers: headers,
             }
         } else {
-            return req;
+            return res;
         }
     }
 });
