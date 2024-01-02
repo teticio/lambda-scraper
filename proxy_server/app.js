@@ -45,8 +45,16 @@ server.forAnyRequest().thenPassThrough({
                     .filter(([key]) => !key.toLowerCase().startsWith('x-amz'))
                     .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
             );
+            return {
+                ...req,
+                headers: headers,
+                url: url.toString(),
+            }
+        } else {
+            return req;
         }
     }
+}
 });
 
 server.forAnyWebSocket().thenPassThrough();
