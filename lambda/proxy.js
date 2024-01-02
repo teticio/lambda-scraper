@@ -16,8 +16,8 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         console.log('proxy-' + String(random) + ': ' + proxyUrl);
         let headers = Object.fromEntries(
             Object.entries(event.headers)
-                .filter(([key]) => !key.startsWith('x-'))
-                .map(([key, value]) => [key.toLowerCase() === 'authorization' ? 'lambda-scraper-' + key : key, value])
+            .filter(([key]) => !key.toLowerCase().startsWith('x-amz') && !key.toLowerCase().startsWith('x-forwarded-') && key.toLowerCase() !== 'host')
+            .map(([key, value]) => [key.toLowerCase() === 'authorization' ? 'lambda-scraper-' + key : key, value])
         );
         headers['host'] = proxyUrl.hostname;
 
@@ -66,7 +66,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
             throw error;
         }
         headers = Object.fromEntries(Object.entries(httpResponse.headers).filter(
-            ([key]) => !key.startsWith('x-')
+            ([key]) => !key.toLowerCase().startsWith('x-amz')
         ));
 
         await pipeline(
@@ -92,7 +92,8 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
 
 if (require.main === module) { // For testing
     const event = {
-        rawPath: '/ipinfo.io/ip',
+        rawPath: '/https://ipinfo.io/ip',
+        rawQueryString: '',
         headers: {},
         requestContext: {
             http: {

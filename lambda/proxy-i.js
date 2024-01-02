@@ -10,11 +10,11 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         const rawQueryString = event.headers['lambda-scraper-raw-query-string'] ? event.headers['lambda-scraper-raw-query-string'] : event.rawQueryString;
         let headers = Object.fromEntries(
             Object.entries(event.headers)
-                .filter(([key]) => !key.startsWith('x-') && key.toLowerCase() !== 'host' && key !== 'lambda-scraper-raw-query-string')
+                .filter(([key]) => !key.toLowerCase().startsWith('x-amz') && !key.toLowerCase().startsWith('x-forwarded-') && key.toLowerCase() !== 'host' && key !== 'lambda-scraper-raw-query-string')
                 .map(([key, value]) => [key.replace(/^lambda-scraper-/, ''), value])
         );
         let url = event.rawPath.startsWith('/http') ? event.rawPath.substring(1) : 'https:/' + event.rawPath;
-        if (rawQueryString) {
+        if (rawQueryString && rawQueryString !== '') {
             url += '?' + rawQueryString;
         }
         const httpRequest = {
@@ -45,7 +45,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
             throw error;
         }
         headers = Object.fromEntries(Object.entries(httpResponse.headers).map(
-            ([key, value]) => key.startsWith('x-') ? ['lambda-scraper-' + key, value] : [key, value]
+            ([key, value]) => key.toLowerCase().startsWith('x-amz') ? ['lambda-scraper-' + key, value] : [key, value]
         ));
 
         await pipeline(
@@ -71,7 +71,8 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
 
 if (require.main === module) { // For testing
     const event = {
-        rawPath: '/ipinfo.io/ip',
+        rawPath: '/https://ipinfo.io/ip',
+        rawQueryString: '',
         headers: {},
         requestContext: {
             http: {
