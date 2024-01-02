@@ -48,13 +48,11 @@ server.forAnyRequest().thenPassThrough({
             return {
                 ...req,
                 headers: headers,
-                url: url.toString(),
             }
         } else {
             return req;
         }
     }
-}
 });
 
 server.forAnyWebSocket().thenPassThrough();
