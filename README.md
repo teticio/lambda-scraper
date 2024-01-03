@@ -46,7 +46,7 @@ If you make a number of cURL requests to this URL, you should see several differ
 
 ## Headers
 
-Certain headers (`host` and those starting with `x-amz` or `x-forwarded-`) are stripped out because they interfere with the mechanism AWS uses to invoke the endpoint via HTTP. If you need these headers to be set in your request, you can do so by preceding them with `lambda-scraper-` (e.g. `lambda-scraper-host: example.com`). A special header `lambda-scraper-raw-query-params` is used to ensure the query parameters are passed through unaltered by encoding and decoding. Similarly, some response headers (those starting with `x-amz`) are mapped to `lambda-scraper-` so that they can be returned without affecting the response itself.
+Certain headers (`host` and those starting with `x-amz` or `x-forwarded-`) are stripped out because they interfere with the mechanism AWS uses to invoke the endpoint via HTTP. If you need these headers to be set in your request, you can do so by preceding them with `lambda-scraper-` (e.g. `lambda-scraper-host: example.com`). A special header `lambda-scraper-raw-query-params` is used to ensure the query parameters are passed straight through without being altered by encoding and decoding. Similarly, some response headers (those starting with `x-amz`) are mapped to `lambda-scraper-` so that they can be returned without affecting the response itself.
 
 ## Authentication
 
