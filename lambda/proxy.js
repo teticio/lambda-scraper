@@ -22,8 +22,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
         headers['host'] = proxyUrl.hostname;
 
         // URL encoding and decoding can be ambiguous (e.g. type=a&type=b becomes type=a,b)
-        // Signing would force us the query string parameters as encoded by AWS
-        // so we pass the raw query string in a header instead
+        // Signing requires the query parameters to be encoded so we pass the raw query string in a header instead
         headers['lambda-scraper-raw-query-string'] = event.rawQueryString;
         const httpRequest = {
             method: event.requestContext.http.method,
