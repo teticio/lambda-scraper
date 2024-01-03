@@ -3,7 +3,6 @@ const mockttp = require("mockttp");
 const readline = require('readline');
 
 readline.emitKeypressEvents(process.stdin);
-process.stdin.setRawMode(true);
 
 let proxyEnabled = true;
 
@@ -33,8 +32,6 @@ server.forAnyRequest().thenPassThrough({
                 headers: headers,
                 url: url.toString(),
             };
-        } else {
-            return req;
         }
     },
 
@@ -49,8 +46,6 @@ server.forAnyRequest().thenPassThrough({
                 ...res,
                 headers: headers,
             }
-        } else {
-            return res;
         }
     }
 });
