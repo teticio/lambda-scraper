@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 function_url=$(terraform output -json | jq -r '.lambda_proxy_url.value')
 echo $function_url
 while true; do
