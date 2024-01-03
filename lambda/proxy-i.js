@@ -4,6 +4,30 @@ if (typeof (awslambda) === 'undefined') {
 }
 const axios = require('axios');
 const pipeline = require('util').promisify(require('stream').pipeline);
+const { Transform } = require('stream');
+
+// awslambda.streamifyResponse does not send headers with an empty response
+// so we have to patch it
+
+class patchEmptyResponse extends Transform {
+    constructor(options) {
+        super(options);
+        this.hasData = false;
+    }
+
+    _transform(chunk, encoding, callback) {
+        this.hasData = true;
+        this.push(chunk);
+        callback();
+    }
+
+    _final(callback) {
+        if (!this.hasData) {
+            this.push(' ');
+        }
+        callback();
+    }
+}
 
 exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     try {
@@ -50,6 +74,7 @@ exports.lambdaHandler = awslambda.streamifyResponse(async (event, responseStream
 
         await pipeline(
             httpResponse.data,
+            new patchEmptyResponse(),
             awslambda.HttpResponseStream.from(responseStream, {
                 statusCode: httpResponse.status,
                 headers: headers,
