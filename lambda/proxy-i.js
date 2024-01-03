@@ -8,7 +8,6 @@ const { Transform } = require('stream');
 
 // awslambda.streamifyResponse does not send headers with an empty response
 // so we have to patch it
-
 class patchEmptyResponse extends Transform {
     constructor(options) {
         super(options);
